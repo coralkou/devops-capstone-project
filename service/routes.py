@@ -62,27 +62,72 @@ def create_accounts():
 ######################################################################
 
 # ... place you code here to LIST accounts ...
-
+@app.route("/accounts", methods=["GET"])
+def list_accounts():
+    """Returns a list of Accounts"""
+    app.logger.info("Request to list Accounts...")
+    accounts = Account.all()
+    result = accounts[0].serialize()
+    return result, status.HTTP_200_OK
 
 ######################################################################
 # READ AN ACCOUNT
 ######################################################################
 
 # ... place you code here to READ an account ...
+@app.route("/accounts/<int:account_id>", methods=["GET"])
+def get_accounts(account_id):
+    """
+    Retrieve a single Account
+
+    This endpoint will return a Account based on it's id
+    """
+    app.logger.info("Request to Retrieve a account with id [%s]", account_id)
+
+    account = Account.find(account_id)
+    if not account:
+        abort(status.HTTP_404_NOT_FOUND, f"Account with id '{account_id}' was not found.")
+
+    app.logger.info("Returning accountt: %s", account.name)
+    return account.serialize(), status.HTTP_200_OK
 
 
 ######################################################################
 # UPDATE AN EXISTING ACCOUNT
 ######################################################################
 
-# ... place you code here to UPDATE an account ...
+@app.route("/accounts/<int:account_id>", methods=["PUT"])
+def update_accounts(account_id):
+    """
+    Update an account
+    This endpoint will update an account based the id specified in the path
+    """
+    app.logger.info("Request to Update an account with id [%s]", account_id)
+    check_content_type("application/json")
+    account = Account.find(account_id)
+    if not account:
+        abort(status.HTTP_404_NOT_FOUND, f"Account with id '{account_id}' was not found.")
+    account.deserialize(request.get_json())
+    account.id = account_id
+    account.update()
+    return account.serialize(), status.HTTP_200_OK
 
 
 ######################################################################
 # DELETE AN ACCOUNT
 ######################################################################
 
-# ... place you code here to DELETE an account ...
+@app.route("/accounts/<int:account_id>", methods=["DELETE"])
+def delete_products(account_id):
+    """
+    Delete an account
+    This endpoint will delete an account based the id specified in the path
+    """
+    app.logger.info("Request to Delete an account with id [%s]", account_id)
+    account = Account.find(account_id)
+    if account:
+        account.delete()
+    return "", status.HTTP_204_NO_CONTENT
 
 
 ######################################################################
